@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Wars</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&display=swap');
+        body {
+            font-family: 'Chakra Petch', monospace;
+            /* Page Background (Futuristic image) */
+            background-color: #9FA9B7; 
+            background-image: url('https://raw.githubusercontent.com/Rustycloudz/images/main/level_1.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; 
+            /* ------------------------------- */
+            color: #48437A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(83, 79, 130, 0.42);
+            background-color: #ADB4BD;
+            position: relative; /* Essential for absolute positioning of overlays */
+        }
+        #gameCanvas {
+            border-radius: 10px;
+            /* --- UPDATED GAME CANVAS BACKGROUND (Pavement image) --- */
+            background-image: url('https://cdn.pixabay.com/photo/2020/06/26/08/28/soil-5342049_1280.jpg');
+            background-size: cover;
+            background-position: center;
+            background-color: #1f242e; /* Fallback color */
+            /* ---------------------------------------------------------- */
+            display: block;
+            touch-action: none; /* Prevents mobile browser actions */
+            cursor: crosshair;
+        }
+        .hud-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #6E458C;
+            border-radius: 0 0 10px 10px;
+            border-top: 4px solid #81A765;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+        .hud-item {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #59B360;
+            text-shadow: 0 0 5px rgba(129, 167, 101, 0.31);
+            margin: 5px 0;
+        }
+        .control-button {
+            background-color: #2a3c4f;
+            color: #00ffff;
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px #00aaff;
+            transition: all 0.1s;
+        }
+        .control-button:active {
+            box-shadow: 0 1px #00aaff;
+            transform: translateY(3px);
+        }
+        .health-bar-container {
+            width: 150px;
+            height: 18px;
+            background-color: #444;
+            border-radius: 9px;
+            overflow: hidden;
+            border: 1px solid #00ffff;
+        }
+        #playerHealthBar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0077, #ff99aa);
+            transition: width 0.3s;
+        }
+        
+        /* --- NEW OVERLAY STYLES --- */
+        .overlay-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 12px;
+            z-index: 10;
+        }
+
+        #gameBriefingScreen {
+            background-image: url('https://github.com/Rustycloudz/images/raw/main/General.png');
+            background-size: cover;
+            background-position: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+        }
+        
+        #gameOverScreen {
+            background: rgba(0, 0, 0, 0.85);
+            display: none; 
+        }
+
+        .briefing-box {
+            background-color: rgba(22, 27, 34, 0.9); /* Dark box over the background image */
+            border: 2px solid #00ffff;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 90%;
+        }
+
+        .briefing-box h2 {
+            font-size: 2rem;
+            color: #ffcc00;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px #ffcc00;
+        }
+
+        .briefing-box p {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        /* -------------------------- */
+        
+        .score-item {
+            color: #ffcc00;
+            margin: 5px 0;
+        }
+        .stat-display {
+            font-size: 0.9rem;
+            margin-right: 10px;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="text-3xl font-bold mb-4 text-cyan-400">SHAPE WARS</h1>
+
+    <div id="game-container" class="relative">
+        
+        <div id="gameBriefingScreen" class="overlay-screen">
+            <div class="briefing-box">
+                <h2 class="text-4xl">MISSION BRIEFING</h2>
+                <p>
+                    **Urgent Deployment!** The Pink Circles have initiated a mass riot, breaching containment zones across the sector. They are deemed **hostile and irreformable**.
+                </p>
+                <p>
+                    Your superior officer has authorized **lethal force**. Eliminate the hostile Pink Circle threat by any means necessary. Failure is not an option, soldier.
+                </p>
+                <button class="control-button text-xl px-8 py-3" onclick="startGame()">DEPLOY</button>
+            </div>
+        </div>
+        
+        <div id="gameOverScreen" class="overlay-screen">
+            <h2 class="text-5xl font-extrabold text-red-500 mb-6 neon-text" style="text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;">GAME OVER</h2>
+            <div id="finalScore" class="text-3xl text-white mb-4"></div>
+            <div id="highScoreText" class="text-xl text-yellow-400 mb-6"></div>
+            <button class="control-button text-xl px-8 py-3" onclick="restartGame()">RESTART</button>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="hud-panel">
+            <div class="flex items-center space-x-2">
+                <span class="text-white">HP:</span>
+                <div class="health-bar-container">
+                    <div id="playerHealthBar"></div>
+                </div>
+            </div>
+            <div class="hud-item">Score: <span id="scoreDisplay">0</span></div>
+            
+            <div class="hud-item flex items-center">
+                <span class="text-white mr-2">Stats:</span>
+                <span id="fireRateDisplay" class="stat-display bg-green-800/50">Rate: 25</span>
+                <span id="defenseDisplay" class="stat-display bg-red-800/50">Def: 0%</span>
+                <span id="multiShotDisplay" class="stat-display bg-pink-800/50">Shots: 1</span>
+                <span id="sizeDisplay" class="stat-display bg-yellow-800/50">Size: 1x</span>
+                <span id="waveDisplay" class="stat-display bg-orange-800/50">Wave: 0x</span> 
+            </div>
+            
+            <div class="hud-item">Enemies: <span id="enemyCount">0</span></div>
+            <div class="hud-item">Level Kills: <span id="killCountDisplay">0 / 20</span></div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center text-sm">
+        <p>Move: **W A S D** or **Arrow Keys** | Shoot: **Mouse Click**</p>
+    </div>
+
+    <audio id="shootSound" src="https://www.myinstants.com/media/sounds/pistol-shot.mpd" preload="auto"></audio>
+    <audio id="hurtSound" src="https://www.myinstants.com/media/sounds/bonk_7zPAD7C.mp3" preload="auto"></audio>
+    <audio id="contactSound" src="https://www.myinstants.com/media/sounds/screaming-goat.mp3" preload="auto"></audio>
+    <audio id="powerupSound" src="https://www.myinstants.com/media/sounds/bruh-sound-effect_WstdzdM.mp3" preload="auto"></audio>
+    <audio id="deathSound" src="https://www.myinstants.com/media/sounds/uuhhh_iqsgYFh.mp3" preload="auto"></audio>
+    <script>
+        // --- LOCAL STORAGE FUNCTIONS ---
+        window.saveHighScore = function (currentScore, currentKills) {
+            const existingScoreData = localStorage.getItem('shapeRoyaleHighScore');
+            let existingHighScore = { score: 0, kills: 0 };
+            
+            if (existingScoreData) {
+                try {
+                    existingHighScore = JSON.parse(existingScoreData);
+                } catch(e) { console.error("Error parsing high score from localStorage:", e); }
+            }
+            if (currentScore > existingHighScore.score) {
+                const newHighScore = { score: currentScore, kills: currentKills };
+                localStorage.setItem('shapeRoyaleHighScore', JSON.stringify(newHighScore));
+            }
+        };
+
+        window.getHighScore = function () {
+            const scoreData = localStorage.getItem('shapeRoyaleHighScore');
+            if (scoreData) {
+                try {
+                    return JSON.parse(scoreData);
+                } catch(e) { console.error("Error parsing high score from localStorage:", e); return null; }
+            }
+            return null;
+        };
+
+        // --- GAME LOGIC ---
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const defenseDisplay = document.getElementById('defenseDisplay');
+        const multiShotDisplay = document.getElementById('multiShotDisplay');
+        const sizeDisplay = document.getElementById('sizeDisplay');
+        const fireRateDisplay = document.getElementById('fireRateDisplay');
+        const waveDisplay = document.getElementById('waveDisplay'); 
+        const enemyCountDisplay = document.getElementById('enemyCount');
+        const healthBar = document.getElementById('playerHealthBar');
+        const killCountDisplay = document.getElementById('killCountDisplay');
+        
+        // References to the overlays
+        const gameBriefingScreen = document.getElementById('gameBriefingScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreText = document.getElementById('finalScore');
+        const highScoreText = document.getElementById('highScoreText');
+        const gameOverTitle = document.querySelector('#gameOverScreen h2');
+        
+        // Removed reference to goalReachedScreen
+
+        // Reference to the audio elements
+        const shootSound = document.getElementById('shootSound');
+        const hurtSound = document.getElementById('hurtSound');
+        const contactSound = document.getElementById('contactSound');
+        const powerupSound = document.getElementById('powerupSound');
+        const deathSound = document.getElementById('deathSound');
+
+        // Game Constants
+        let gameActive = false;
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 500;
+        let score = 0;
+        let kills = 0; 
+        const KILLS_FOR_BOSS = 20; 
+        let bossSpawned = false; 
+        let levelComplete = false; 
+        let mouseX = CANVAS_WIDTH / 2;
+        let mouseY = CANVAS_HEIGHT / 2;
+        const keys = {};
+        
+        // NEW: Goal Zone Definition
+        const GOAL_ZONE = {
+            x: CANVAS_WIDTH - 50,
+            y: 0,
+            width: 50,
+            height: CANVAS_HEIGHT
+        };
+
+        // Global arrays for Obstacles
+        const obstacles = [];
+
+        // Canvas Setup 
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        function resizeCanvas() {
+            const container = document.getElementById('game-container');
+            const aspectRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+            const containerWidth = container.clientWidth;
+            canvas.style.width = containerWidth + 'px';
+            canvas.style.height = (containerWidth / aspectRatio) + 'px';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getAngle(x1, y1, x2, y2) {
+            return Math.atan2(y2 - y1, x2 - x1);
+        }
+
+        // --- COLLISION HELPER FUNCTIONS ---
+        function checkCircleRectCollision(circle, rect) {
+            // Find the closest point on the rectangle to the center of the circle
+            const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
+            const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
+
+            // Calculate the distance between the circle's center and this closest point
+            const distX = circle.x - closestX;
+            const distY = circle.y - closestY;
+
+            // If the distance is less than the circle's radius, there's a collision
+            const distance = Math.hypot(distX, distY);
+            return distance < circle.radius;
+        }
+
+        function preventMovementThroughRect(shape, rect) {
+            // Find the closest point on the rectangle to the center of the shape
+            const closestX = Math.max(rect.x, Math.min(shape.x, rect.x + rect.width));
+            const closestY = Math.max(rect.y, Math.min(shape.y, rect.y + rect.height));
+
+            const distX = shape.x - closestX;
+            const distY = shape.y - closestY;
+
+            const distance = Math.hypot(distX, distY);
+            
+            if (distance < shape.radius) {
+                // Collision detected. Resolve the overlap.
+                const overlap = shape.radius - distance;
+                
+                // Calculate normalized direction of separation
+                const angle = Math.atan2(distY, distX);
+                
+                // Push the shape out of the rectangle along the separation vector
+                shape.x += Math.cos(angle) * overlap;
+                shape.y += Math.sin(angle) * overlap;
+            }
+        }
+        // --- END COLLISION HELPERS ---
+
+        // --- ENTITY CLASSES ---
+        class Shape {
+            constructor(x, y, radius, color, health) {
+                this.x = x; this.y = y; this.radius = radius; this.color = color;
+                this.health = health; this.maxHealth = health;
+                this.velocity = { x: 0, y: 0 }; this.speed = 3;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color; ctx.fill();
+                // ADDED OUTLINE
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            takeDamage(damage) {
+                const reduction = player ? player.defense / 100 : 0;
+                this.health -= damage * (1 - reduction);
+            }
+            isDead() { return this.health <= 0; }
+            update() { this.x += this.velocity.x; this.y += this.velocity.y; }
+        }
+
+        class Player extends Shape {
+            constructor(x, y) {
+                super(x, y, 15, '#00ffff', 150); 
+                this.fireRate = 25; 
+                this.fireCooldown = 0;
+                this.defense = 0; 
+                this.bulletSizeModifier = 1.0; 
+                this.multiShotCount = 1;
+                this.speed = 4; 
+                this.waveShotAmplitude = 0; 
+            }
+            handleInput() { 
+                this.velocity.x = 0; this.velocity.y = 0;
+                if (keys['w'] || keys['arrowup']) { this.velocity.y = -this.speed; }
+                if (keys['s'] || keys['arrowdown']) { this.velocity.y = this.speed; }
+                if (keys['a'] || keys['arrowleft']) { this.velocity.x = -this.speed; }
+                if (keys['d'] || keys['arrowright']) { this.velocity.x = this.speed; }
+                if (this.velocity.x !== 0 && this.velocity.y !== 0) {
+                    this.velocity.x *= 0.707; this.velocity.y *= 0.707;
+                }
+            }
+            
+            draw() {
+                // Call base Shape draw (now includes outline)
+                super.draw(); 
+                
+                const angle = getAngle(this.x, this.y, mouseX, mouseY);
+                const barrelLength = this.radius * 1.5; 
+                const barrelWidth = 6; 
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(angle);
+
+                ctx.fillStyle = "#000000"; 
+                ctx.fillRect(this.radius - 2, -barrelWidth / 2, barrelLength, barrelWidth); 
+
+                ctx.restore();
+            }
+
+            update() {
+                super.update();
+                // Boundary clamping - REMOVED RIGHT BOUNDARY CLAMPING TO ALLOW GOAL ENTRY
+                this.x = Math.max(this.radius, this.x); // Left edge clamp remains
+                this.y = Math.max(this.radius, Math.min(CANVAS_HEIGHT - this.radius, this.y)); // Top/Bottom clamp remains
+                
+                // If the level is complete, we stop clamping the right side, allowing the player to move into the Goal Zone
+                if (!levelComplete) {
+                    this.x = Math.min(CANVAS_WIDTH - this.radius, this.x);
+                }
+            }
+            updateHUD() {
+                const percentage = (this.health / this.maxHealth) * 100;
+                healthBar.style.width = `${Math.max(0, percentage)}%`;
+                healthBar.style.background = percentage > 50 ? 'linear-gradient(90deg, #00ff77, #00ffff)' : 'linear-gradient(90deg, #ff99aa, #ff0077)';
+            }
+            takeDamage(damage) {
+                const reduction = this.defense / 100;
+                this.health -= damage * (1 - reduction);
+            }
+        }
+
+        class Enemy extends Shape {
+            constructor(x, y, radius = 12, color = '#ff0077', health = 20) {
+                super(x, y, radius, color, health); 
+                this.speed = 1.8; 
+                this.fireRate = 80; 
+                this.fireCooldown = Math.random() * this.fireRate;
+                
+                // Enemy Powerup Stats
+                this.bulletSizeModifier = 1.0;
+                this.multiShotCount = 1;
+                this.waveShotAmplitude = 0;
+            }
+            chase(target) {
+                const angle = getAngle(this.x, this.y, target.x, target.y);
+                this.velocity.x = Math.cos(angle) * this.speed;
+                this.velocity.y = Math.sin(angle) * this.speed;
+            }
+            aiShoot(target) {
+                this.fireCooldown--;
+                if (this.fireCooldown <= 0) {
+                    const angle = getAngle(this.x, this.y, target.x, target.y);
+                    const baseBulletSpeed = 5;
+                    const baseBulletRadius = 5;
+                    const baseDamage = 5;
+
+                    const finalRadius = baseBulletRadius * this.bulletSizeModifier;
+                    const finalDamage = baseDamage * this.bulletSizeModifier;
+
+                    for (let i = 0; i < this.multiShotCount; i++) {
+                        const spreadAngle = 0.1 * (i - (this.multiShotCount - 1) / 2);
+                        
+                        projectiles.push(new Projectile(
+                            this.x, 
+                            this.y, 
+                            angle + spreadAngle, 
+                            baseBulletSpeed, 
+                            finalRadius, 
+                            'enemy', 
+                            '#ff44aa', 
+                            finalDamage,
+                            this.waveShotAmplitude 
+                        ));
+                    }
+                    this.fireCooldown = this.fireRate + (Math.random() * 30 - 15);
+                }
+            }
+            update(target) {
+                this.chase(target); 
+                this.aiShoot(target); 
+                super.update();
+            }
+        }
+
+        // NEW: Boss Class inherits from Enemy
+        class Boss extends Enemy {
+            constructor(x, y) {
+                // Large radius, very high health, slow speed
+                super(x, y, 40, '#ff0000', 500); 
+                this.speed = 1.0; 
+                this.fireRate = 40; 
+                this.multiShotCount = 3;
+                this.bulletSizeModifier = 1.5;
+                this.waveShotAmplitude = 2; // Fires wavy shots
+            }
+            
+            draw() {
+                super.draw(); // This now draws the outline
+
+                // Draw a flashing border over the outline
+                const pulse = Math.sin(Date.now() / 100) * 0.1 + 0.9;
+                ctx.strokeStyle = `rgba(255, 0, 0, ${pulse})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2, false);
+                ctx.stroke();
+
+                // Draw Boss Health Bar
+                const healthBarWidth = 100;
+                const healthBarHeight = 10;
+                const xOffset = this.x - healthBarWidth / 2;
+                const yOffset = this.y - this.radius - 20;
+                
+                ctx.fillStyle = '#444444';
+                ctx.fillRect(xOffset, yOffset, healthBarWidth, healthBarHeight);
+                
+                const currentHealthWidth = (this.health / this.maxHealth) * healthBarWidth;
+                ctx.fillStyle = '#00ff77';
+                ctx.fillRect(xOffset, yOffset, currentHealthWidth, healthBarHeight);
+            }
+            
+            // Override aiShoot to be more powerful/complex
+            aiShoot(target) {
+                this.fireCooldown--;
+                if (this.fireCooldown <= 0) {
+                    const numShots = this.multiShotCount + 2; 
+                    const angle = getAngle(this.x, this.y, target.x, target.y);
+                    const baseBulletSpeed = 6;
+                    const baseBulletRadius = 6;
+                    const baseDamage = 10; 
+
+                    const finalRadius = baseBulletRadius * this.bulletSizeModifier;
+                    const finalDamage = baseDamage * this.bulletSizeModifier;
+                    
+                    // Use a unique bullet color
+                    const bulletColor = '#ff00ff'; 
+
+                    for (let i = 0; i < numShots; i++) {
+                        // Increased spread for boss
+                        const spreadAngle = 0.2 * (i - (numShots - 1) / 2); 
+                        
+                        projectiles.push(new Projectile(
+                            this.x, 
+                            this.y, 
+                            angle + spreadAngle, 
+                            baseBulletSpeed, 
+                            finalRadius, 
+                            'enemy', 
+                            bulletColor, 
+                            finalDamage,
+                            this.waveShotAmplitude
+                        ));
+                    }
+                    this.fireCooldown = this.fireRate + (Math.random() * 20 - 10);
+                }
+            }
+        }
+        // END Boss Class
+
+
+        class Projectile extends Shape {
+            constructor(x, y, angle, speed, radius, type, color, damage, waveAmplitude = 0) {
+                super(x, y, radius, color, 1);
+                this.damage = damage; 
+                this.speed = speed; 
+                this.type = type; // 'player' or 'enemy'
+                
+                this.waveAmplitude = waveAmplitude; 
+                this.travelDistance = 0; 
+                
+                // Store base movement vector
+                this.baseVelocityX = Math.cos(angle) * speed; 
+                this.baseVelocityY = Math.sin(angle) * speed;
+                
+                // Store perpendicular vector for wave movement
+                this.perpendicularAngle = angle + Math.PI / 2;
+                
+                if (waveAmplitude === 0) {
+                    this.velocity.x = this.baseVelocityX;
+                    this.velocity.y = this.baseVelocityY;
+                }
+            }
+
+            update() {
+                if (this.waveAmplitude > 0) {
+                    this.travelDistance += this.speed;
+                    
+                    const amplitude = this.waveAmplitude * 3; 
+                    const waveOffset = Math.sin(this.travelDistance / 25) * amplitude; 
+                    
+                    const perpX = Math.cos(this.perpendicularAngle) * waveOffset;
+                    const perpY = Math.sin(this.perpendicularAngle) * waveOffset;
+        
+                    this.x += this.baseVelocityX + perpX;
+                    this.y += this.baseVelocityY + perpY;
+
+                } else {
+                    super.update();
+                }
+            }
+        }
+
+        class Powerup {
+            constructor(x, y) {
+                this.x = x; this.y = y; this.radius = 10;
+                const types = ['HealthPack', 'MultiShot', 'BulkShot', 'DefenseBoost', 'FireRateBoost', 'WaveShot'];
+                this.type = types[Math.floor(Math.random() * types.length)];
+                this.color = this.getColor();
+            }
+            getColor() {
+                switch (this.type) {
+                    case 'BulkShot': return '#ffcc00';
+                    case 'MultiShot': return '#ff00ff';
+                    case 'HealthPack': return '#00aaff';
+                    case 'DefenseBoost': return '#ff4444';
+                    case 'FireRateBoost': return '#00ff00'; 
+                    case 'WaveShot': return '#ff8800';
+                    default: return '#cccccc';
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                
+                // --- POWERUP DRAWING LOGIC ---
+                const r = this.radius;
+
+                if (this.type === 'HealthPack') {
+                    // Draw a heart shape for HealthPack (Blue)
+                    const hx = this.x; 
+                    const hy = this.y; 
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(hx, hy + r * 1.2);
+                    ctx.bezierCurveTo(
+                        hx + r * 1.5, hy - r * 0.5,
+                        hx + r * 0.5, hy - r * 1.5,
+                        hx, hy - r * 0.5
+                    );
+                    ctx.bezierCurveTo(
+                        hx - r * 0.5, hy - r * 1.5,
+                        hx - r * 1.5, hy - r * 0.5,
+                        hx, hy + r * 1.2
+                    );
+                    ctx.fill();
+                    
+                    // Added Outline
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                } else if (this.type === 'MultiShot') {
+                    // Draw a plus shape for MultiShot (Pink)
+                    const size = r * 0.3; // Half the width of the bars
+                    const length = r * 2; // Full length of the bars
+                    const x_start = this.x - r;
+                    const y_start = this.y - r;
+
+                    ctx.beginPath();
+                    
+                    // Horizontal bar
+                    ctx.rect(x_start, this.y - size, length, size * 2); 
+                    
+                    // Vertical bar
+                    ctx.rect(this.x - size, y_start, size * 2, length); 
+                    
+                    ctx.fill();
+                    
+                    // Added Outline
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                
+                } else if (this.type === 'BulkShot') {
+                    // Draw an arrow pointing up (triangle) for BulkShot (Yellow)
+                    const ax = this.x;
+                    const ay = this.y;
+                    
+                    ctx.beginPath();
+                    // Point
+                    ctx.moveTo(ax, ay - r);
+                    // Bottom left corner
+                    ctx.lineTo(ax - r, ay + r / 2);
+                    // Bottom right corner
+                    ctx.lineTo(ax + r, ay + r / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Added Outline
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                } else if (this.type === 'WaveShot') {
+                    // Draw a wavy line segment for WaveShot (Orange)
+                    
+                    const startX = this.x - r;
+                    const endX = this.x + r;
+                    const halfR = r / 2;
+                    
+                    // --- REVISED LOGIC FOR WAVE SHOT (Stroke-based) ---
+                    ctx.beginPath();
+                    ctx.moveTo(startX, this.y);
+                    // Two Bezier curves for a single sine-like wave
+                    ctx.bezierCurveTo(
+                        this.x - halfR, this.y - r, // Control point 1 (up)
+                        this.x + halfR, this.y + r, // Control point 2 (down)
+                        endX, this.y                 // End point
+                    );
+                    
+                    // 1. Draw black outline (thicker stroke)
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 5;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    
+                    // 2. Draw colored line on top (original thickness)
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 3; 
+                    ctx.stroke();
+                    // --- END REVISED LOGIC ---
+                    
+                    ctx.lineCap = 'butt'; // Reset line cap
+                    
+                } else if (this.type === 'FireRateBoost') {
+                    // Draw a snowflake shape (three intersecting lines) for FireRateBoost (Green)
+                    
+                    const len = r * 1.8; // Total length of the arm
+                    const halfLen = len / 2;
+                    
+                    ctx.lineCap = 'round';
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+
+                    // Draw three lines, 60 degrees apart, to form a 6-pointed star/snowflake
+                    for(let i = 0; i < 3; i++){
+                        ctx.rotate(Math.PI / 3 * i); // Rotate by 0, 60, 120 degrees
+                        
+                        // 1. Draw Black Outline (Thicker)
+                        ctx.beginPath();
+                        ctx.moveTo(-halfLen, 0);
+                        ctx.lineTo(halfLen, 0);
+                        ctx.strokeStyle = '#000000';
+                        ctx.lineWidth = 5; 
+                        ctx.stroke();
+                        
+                        // 2. Draw Colored Foreground (Original Thickness)
+                        ctx.beginPath();
+                        ctx.moveTo(-halfLen, 0);
+                        ctx.lineTo(halfLen, 0);
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 3; 
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+                    ctx.lineCap = 'butt'; // Reset line cap
+                    
+                } else if (this.type === 'DefenseBoost') {
+                    // Draw a SHIELD shape for DefenseBoost (Red) - UPDATED SHAPE
+                    const sx = this.x;
+                    const sy = this.y;
+                    const sr = r * 1.5; // Shield size multiplier 
+                    
+                    ctx.beginPath();
+                    // Top edge (start from top-left)
+                    ctx.moveTo(sx - sr * 0.8, sy - sr * 1.0); 
+                    // Top right corner
+                    ctx.lineTo(sx + sr * 0.8, sy - sr * 1.0);
+                    // Right side
+                    ctx.quadraticCurveTo(
+                        sx + sr * 1.0, sy + sr * 0.0, // Control point 1 (right middle)
+                        sx + sr * 0.5, sy + sr * 1.0  // Mid-right point
+                    );
+                    // Bottom point (V shape)
+                    ctx.lineTo(sx, sy + sr * 1.5);
+                    // Left side
+                    ctx.lineTo(sx - sr * 0.5, sy + sr * 1.0);
+                    ctx.quadraticCurveTo(
+                        sx - sr * 1.0, sy + sr * 0.0, // Control point 2 (left middle)
+                        sx - sr * 0.8, sy - sr * 1.0  // Back to top-left
+                    );
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Added Outline
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                } else {
+                    // Default fallback
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Added Outline
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                // --- END POWERUP DRAWING LOGIC ---
+
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Obstacle {
+            constructor(x, y, width, height, color = '#343a40') {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = color; 
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+        // --- END ENTITY CLASSES ---
+
+        let player;
+        let enemies = [];
+        let projectiles = [];
+        let powerups = [];
+        let enemySpawnTimer = 0;
+        const ENEMY_SPAWN_RATE = 140; 
+        let powerupSpawnTimer = 0;
+        const POWERUP_SPAWN_RATE = 300; 
+
+        // Function called from the "DEPLOY" button
+        window.startGame = function() {
+            gameBriefingScreen.style.display = 'none';
+            initGame();
+            gameActive = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function initGame() {
+            player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            enemies = [];
+            projectiles = [];
+            powerups = [];
+            score = 0;
+            kills = 0;
+            bossSpawned = false;
+            levelComplete = false; 
+            gameOverScreen.style.display = 'none';
+            // Removed: goalReachedScreen.style.display = 'none'; 
+            
+            // Ensure Game Over screen reverts to default look
+            gameOverScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+            gameOverTitle.textContent = 'GAME OVER';
+            gameOverTitle.style.textShadow = '0 0 10px #ff0000, 0 0 20px #ff0000';
+
+            player.defense = 0;
+            player.bulletSizeModifier = 1.0;
+            player.multiShotCount = 1;
+            player.fireRate = 25; 
+            player.waveShotAmplitude = 0;
+
+            // Initialize Obstacles on the map
+            obstacles.length = 0; // Clear the array when restarting
+            obstacles.push(
+                new Obstacle(100, 100, 50, 50),
+                new Obstacle(CANVAS_WIDTH - 150, 100, 50, 50),
+                new Obstacle(100, CANVAS_HEIGHT - 150, 50, 50),
+                new Obstacle(CANVAS_WIDTH - 150, CANVAS_HEIGHT - 150, 50, 50),
+                // A central rectangular barrier
+                new Obstacle(CANVAS_WIDTH/2 - 75, CANVAS_HEIGHT/2 - 10, 150, 20) 
+            );
+
+            updateHUD();
+            spawnEnemy();
+        }
+
+        function updateHUD() {
+            scoreDisplay.textContent = score;
+            enemyCountDisplay.textContent = enemies.length;
+            killCountDisplay.textContent = `${kills} / ${KILLS_FOR_BOSS}`; 
+            
+            fireRateDisplay.textContent = `Rate: ${player.fireRate}`; 
+            
+            defenseDisplay.textContent = `Def: ${player.defense}%`;
+            multiShotDisplay.textContent = `Shots: ${player.multiShotCount}`;
+            sizeDisplay.textContent = `Size: ${player.bulletSizeModifier.toFixed(1)}x`;
+            waveDisplay.textContent = `Wave: ${player.waveShotAmplitude}x`;
+            player.updateHUD();
+        }
+
+        function spawnEnemy() { 
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            const padding = 50;
+
+            switch (side) {
+                case 0: x = Math.random() * CANVAS_WIDTH; y = -padding; break;
+                case 1: x = Math.random() * CANVAS_WIDTH; y = CANVAS_HEIGHT + padding; break;
+                case 2: x = -padding; y = Math.random() * CANVAS_HEIGHT; break;
+                case 3: x = CANVAS_WIDTH + padding; y = Math.random() * CANVAS_HEIGHT; break;
+            }
+            enemies.push(new Enemy(x, y));
+        }
+        
+        // NEW: Boss spawn function
+        function spawnBoss() {
+            bossSpawned = true;
+            
+            enemies.length = 0; 
+            
+            const boss = new Boss(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            enemies.push(boss);
+            
+            powerupSpawnTimer = -150; 
+            
+            killCountDisplay.textContent = "BOSS FIGHT!";
+        }
+
+        function spawnPowerup() {
+            const x = Math.random() * (CANVAS_WIDTH - 100) + 50;
+            const y = Math.random() * (CANVAS_HEIGHT - 100) + 50;
+            powerups.push(new Powerup(x, y));
+        }
+
+        function fireWeapon() {
+            if (player.fireCooldown > 0) return;
+            shootSound.currentTime = 0; shootSound.play().catch(e => console.log("Audio play prevented:", e));
+            const angle = getAngle(player.x, player.y, mouseX, mouseY);
+            const baseBulletSpeed = 8; const baseBulletRadius = 5; const baseDamage = 12; 
+            const finalRadius = baseBulletRadius * player.bulletSizeModifier;
+            const finalDamage = baseDamage * player.bulletSizeModifier;
+            
+            for (let i = 0; i < player.multiShotCount; i++) {
+                const spreadAngle = 0.1 * (i - (player.multiShotCount - 1) / 2);
+                
+                projectiles.push(new Projectile(
+                    player.x, 
+                    player.y, 
+                    angle + spreadAngle, 
+                    baseBulletSpeed, 
+                    finalRadius, 
+                    'player', 
+                    '#ffffff', 
+                    finalDamage,
+                    player.waveShotAmplitude
+                ));
+            }
+            player.fireCooldown = player.fireRate;
+        }
+        
+        function playHurtSound() { hurtSound.currentTime = 0; hurtSound.play().catch(e => console.log("Audio play prevented:", e)); }
+        function playContactSound() { contactSound.currentTime = 0; contactSound.play().catch(e => console.log("Audio play prevented:", e)); }
+        function playPowerupSound() { powerupSound.currentTime = 0; powerupSound.play().catch(e => console.log("Audio play prevented:", e)); }
+        function playDeathSound() { deathSound.currentTime = 0; deathSound.play().catch(e => console.log("Audio play prevented:", e)); }
+
+        function checkCollision(objA, objB) {
+            const distance = Math.hypot(objA.x - objB.x, objA.y - objB.y);
+            return distance < objA.radius + objB.radius;
+        }
+
+        function handleCollisions() {
+            
+            // --- Player and Enemies vs Powerups (Unified Logic) ---
+            powerups = powerups.filter(powerup => {
+                
+                // 1. Check Player collision
+                if (checkCollision(player, powerup)) {
+                    playPowerupSound();
+                    
+                    switch (powerup.type) {
+                        case 'HealthPack': player.health = Math.min(player.maxHealth, player.health + 40); break;
+                        case 'MultiShot': player.multiShotCount += 1; break;
+                        case 'BulkShot': player.bulletSizeModifier = Math.min(4.0, player.bulletSizeModifier + 0.3); break;
+                        case 'DefenseBoost': player.defense = Math.min(80, player.defense + 5); break;
+                        case 'FireRateBoost': player.fireRate = Math.max(5, player.fireRate - 2); break;
+                        case 'WaveShot': player.waveShotAmplitude = Math.min(10, player.waveShotAmplitude + 1); break;
+                    }
+                    updateHUD();
+                    return false; 
+                }
+
+                // 2. Check Enemy collision
+                for (let i = 0; i < enemies.length; i++) {
+                    const enemy = enemies[i];
+                    if (checkCollision(enemy, powerup)) {
+                        playPowerupSound();
+                        
+                        switch (powerup.type) {
+                            case 'HealthPack': 
+                                enemy.health = enemy.maxHealth; 
+                                break;
+                            case 'MultiShot': 
+                                enemy.multiShotCount = Math.min(5, enemy.multiShotCount + 1); 
+                                break;
+                            case 'BulkShot': 
+                                enemy.bulletSizeModifier = Math.min(3.0, enemy.bulletSizeModifier + 0.3);
+                                enemy.radius = Math.min(30, enemy.radius + 2);
+                                enemy.maxHealth += 10;
+                                enemy.health = Math.min(enemy.maxHealth, enemy.health + 10);
+                                break;
+                            case 'DefenseBoost': 
+                                enemy.maxHealth += 30;
+                                enemy.health = Math.min(enemy.maxHealth, enemy.health + 30);
+                                enemy.color = '#8b0000'; // Dark red for toughness
+                                break;
+                            case 'FireRateBoost': 
+                                enemy.fireRate = Math.max(10, enemy.fireRate - 10);
+                                break;
+                            case 'WaveShot':
+                                enemy.waveShotAmplitude = Math.min(5, enemy.waveShotAmplitude + 1);
+                                break;
+                        }
+                        return false; 
+                    }
+                }
+
+                return true; 
+            });
+            // ----------------------------------------------------
+
+
+            // Projectiles vs Obstacles (Player and Enemy projectiles)
+            projectiles = projectiles.filter(p => {
+                let destroyedByWall = false;
+                
+                for (const obstacle of obstacles) {
+                    if (checkCircleRectCollision(p, obstacle)) {
+                        destroyedByWall = true;
+                        break;
+                    }
+                }
+                return !destroyedByWall;
+            });
+            
+            // Player Projectiles vs Enemies
+            projectiles = projectiles.filter(p => {
+                if (p.type === 'player') {
+                    let hit = false;
+                    enemies = enemies.filter(enemy => {
+                        if (checkCollision(p, enemy)) {
+                            enemy.takeDamage(p.damage);
+                            hit = true;
+                            if (enemy.isDead()) {
+                                score += 100; 
+                                if (!(enemy instanceof Boss)) {
+                                    kills++; 
+                                }
+                                playDeathSound();
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                    return !hit;
+                }
+                return true;
+            });
+
+            // Enemy Projectiles vs Player
+            projectiles = projectiles.filter(p => {
+                if (p.type === 'enemy' && checkCollision(p, player)) {
+                    player.takeDamage(p.damage); playHurtSound();
+                    return false;
+                }
+                return true;
+            });
+
+            // Player vs Enemies (Contact damage)
+            enemies.forEach(enemy => {
+                if (checkCollision(player, enemy)) {
+                    const damageBefore = player.health;
+                    player.takeDamage(0.5); 
+                    if (player.health < damageBefore) { playContactSound(); }
+                }
+            });
+
+            // Projectiles cleanup
+            const OFF_SCREEN_BUFFER = 500;
+            projectiles = projectiles.filter(p =>
+                p.x > -OFF_SCREEN_BUFFER && p.x < CANVAS_WIDTH + OFF_SCREEN_BUFFER && 
+                p.y > -OFF_SCREEN_BUFFER && p.y < CANVAS_HEIGHT + OFF_SCREEN_BUFFER
+            );
+        }
+
+        function endGame() {
+            gameActive = false;
+            gameOverScreen.style.display = 'flex';
+            
+            gameOverScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+            gameOverTitle.textContent = 'GAME OVER';
+            gameOverTitle.style.textShadow = '0 0 10px #ff0000, 0 0 20px #ff0000';
+            
+            window.saveHighScore(score, kills);
+            const highScore = window.getHighScore();
+
+            finalScoreText.innerHTML = `
+                <div class="score-item">FINAL SCORE: <span class="text-3xl">${score}</span></div>
+                <div class="score-item">ENEMIES KILLED: ${kills}</div>
+            `;
+            
+            if (highScore && highScore.score > 0) {
+                if (score === highScore.score) {
+                    highScoreText.innerHTML = `<div class="text-2xl mt-4 text-green-400">NEW HIGH SCORE! ${score}</div><div class="text-lg">Kills: ${highScore.kills}</div>`;
+                } else {
+                    highScoreText.innerHTML = `<div class="text-2xl mt-4">HIGH SCORE: ${highScore.score}</div><div class="text-lg">Most Kills: ${highScore.kills}</div>`;
+                }
+            } else {
+                 highScoreText.textContent = "Your first score is recorded locally!";
+            }
+        }
+        
+        // FIX: Loads 'lvl_2.html'
+        window.nextLevel = function() {
+            // Redirects to the next level file in the same directory
+            window.location.href = 'lvl_2.html';
+        }
+
+        // NEW: Function to handle winning the level (triggers next level load immediately)
+        function levelCompleteFn() {
+            levelComplete = true;
+            gameActive = false;
+            
+            score += 5000; // Bonus points for completing the level (defeating the boss)
+            window.saveHighScore(score, kills);
+            
+            // Immediately load the next level without showing a modal
+            nextLevel(); 
+        }
+
+        // NEW: Function to check if the player enters the goal zone
+        function checkGoalZone() {
+            // Check if player's right edge is past the goal zone's left edge
+            if (player.x + player.radius > GOAL_ZONE.x) {
+                // The player has entered the zone!
+                levelCompleteFn();
+            }
+        }
+        
+        // NEW: Function to draw the flashing goal zone
+        function drawGoalZone() {
+            // Only draw the goal zone if the boss is defeated and enemies are cleared
+            if (bossSpawned && enemies.length === 0 && !levelComplete) {
+                // Flash the color to indicate the goal is active
+                const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5; // Sine wave from 0.0 to 1.0
+                ctx.fillStyle = `rgba(0, 255, 119, ${pulse})`; // Bright green flash
+                ctx.fillRect(GOAL_ZONE.x, GOAL_ZONE.y, GOAL_ZONE.width, GOAL_ZONE.height);
+                
+                // Add text label
+                ctx.fillStyle = `rgba(0, 0, 0, 1.0)`;
+                ctx.font = 'bold 24px "Chakra Petch"';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate(GOAL_ZONE.x + GOAL_ZONE.width / 2, GOAL_ZONE.height / 2);
+                ctx.rotate(Math.PI / 2); // Rotate text 90 degrees
+                ctx.fillText("GOAL", 0, 10);
+                ctx.restore();
+            }
+        }
+
+        window.restartGame = function() {
+            initGame();
+            gameActive = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop() {
+            if (!gameActive || levelComplete) return;
+
+            // 1. Clear Canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // NEW: Draw Goal Zone first (if active)
+            drawGoalZone();
+
+            // 2. Update Timers
+            enemySpawnTimer++;
+            if (!bossSpawned && enemySpawnTimer > ENEMY_SPAWN_RATE) { 
+                spawnEnemy();
+                enemySpawnTimer = 0;
+            }
+            
+            powerupSpawnTimer++;
+            if (powerupSpawnTimer > POWERUP_SPAWN_RATE) {
+                spawnPowerup();
+                powerupSpawnTimer = 0;
+            }
+
+            // 3. Update Entities
+            player.handleInput();
+            player.update();
+            player.fireCooldown = Math.max(0, player.fireCooldown - 1); 
+
+            enemies.forEach(enemy => enemy.update(player));
+            projectiles.forEach(p => p.update());
+
+            // Resolve Player/Enemy movement against obstacles
+            [player, ...enemies].forEach(entity => {
+                obstacles.forEach(obstacle => {
+                    preventMovementThroughRect(entity, obstacle);
+                });
+            });
+
+            // 4. Handle Collisions
+            handleCollisions();
+
+            // 5. Check Game Over
+            if (player.isDead()) {
+                endGame();
+                return;
+            }
+            
+            // 5b. Check for Boss Spawn Condition (20 kills)
+            if (!bossSpawned && kills >= KILLS_FOR_BOSS) {
+                spawnBoss();
+            }
+
+            // 5c. Check for Boss Defeat Condition & Goal Entry
+            if (bossSpawned && enemies.length === 0 && !levelComplete) {
+                // Boss defeated, goal is active, check if player has entered the zone
+                checkGoalZone(); 
+            }
+
+            // 6. Draw Entities
+            powerups.forEach(p => p.draw());
+            obstacles.forEach(o => o.draw()); 
+            player.draw();
+            enemies.forEach(e => e.draw());
+            projectiles.forEach(p => p.draw());
+
+            // 7. Update HUD
+            updateHUD();
+
+            // 8. Loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- EVENT LISTENERS (No changes needed) ---
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                e.preventDefault();
+            }
+            keys[key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+        });
+
+        canvas.addEventListener('mousedown', () => {
+            if (gameActive) {
+                fireWeapon();
+            }
+        });
+
+        // Initial setup only shows the briefing screen
+        window.onload = function() {
+            resizeCanvas();
+        }
+    </script>
+
+</body>
+</html>

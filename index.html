@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape Wars</title>
+    <title>Shape Wars: Endless Siege</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&display=swap');
@@ -22,6 +22,11 @@
             align-items: center;
             padding: 20px;
         }
+        /* REVISED: Removed ad-specific styling from content wrapper to center the game only */
+        #content-wrapper { 
+            width: 100%;
+            max-width: 800px; /* Keeps the game centered */
+        }
         #game-container {
             width: 100%;
             max-width: 800px;
@@ -31,18 +36,13 @@
             border-radius: 12px;
             box-shadow: 0 0 20px rgba(83, 79, 130, 0.42);
             background-color: #ADB4BD;
-            position: relative; /* Essential for absolute positioning of overlays */
+            position: relative; 
         }
         #gameCanvas {
             border-radius: 10px;
-            /* --- UPDATED GAME CANVAS BACKGROUND (Pavement image) --- */
-            background-image: url('https://cdn.pixabay.com/photo/2020/06/26/08/28/soil-5342049_1280.jpg');
-            background-size: cover;
-            background-position: center;
             background-color: #1f242e; /* Fallback color */
-            /* ---------------------------------------------------------- */
             display: block;
-            touch-action: none; /* Prevents mobile browser actions */
+            touch-action: none; 
             cursor: crosshair;
         }
         .hud-panel {
@@ -53,7 +53,7 @@
             background-color: #6E458C;
             border-radius: 0 0 10px 10px;
             border-top: 4px solid #81A765;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
+            flex-wrap: wrap; 
         }
         .hud-item {
             font-size: 1.1rem;
@@ -90,7 +90,7 @@
             transition: width 0.3s;
         }
         
-        /* --- NEW OVERLAY STYLES --- */
+        /* --- OVERLAY STYLES --- */
         .overlay-screen {
             position: absolute;
             top: 0;
@@ -120,7 +120,7 @@
         }
 
         .briefing-box {
-            background-color: rgba(22, 27, 34, 0.9); /* Dark box over the background image */
+            background-color: rgba(22, 27, 34, 0.9); 
             border: 2px solid #00ffff;
             padding: 30px;
             border-radius: 10px;
@@ -141,6 +141,48 @@
             line-height: 1.5;
         }
         
+        /* --- AD STYLES (FIXED POSITION) --- */
+        #ad-container {
+            position: fixed; /* Adheres to viewport */
+            bottom: 20px;    /* Bottom right */
+            right: 20px;
+            width: 350px;    /* Increased size */
+            max-height: 600px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(83, 79, 130, 0.42);
+            background-color: #222; 
+            z-index: 100; /* Ensure it is above game elements */
+        }
+        
+        /* NEW AD CONTAINER STYLES (Bottom Left) */
+        #ad-container-left {
+            position: fixed; 
+            bottom: 20px;    
+            left: 20px; /* Position change */
+            width: 350px; /* Same size as the right ad */
+            max-height: 600px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(83, 79, 130, 0.42);
+            background-color: #222; 
+            z-index: 100; 
+        }
+
+        #ad-container img, #ad-container-left img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
+        
+        /* Responsive adjustments for smaller screens: Hide ads to prevent game overlap on small devices */
+        @media (max-width: 700px) { 
+            #ad-container, #ad-container-left {
+                display: none;
+            }
+        }
+        
         /* -------------------------- */
         
         .score-item {
@@ -157,55 +199,77 @@
 </head>
 <body>
 
-    <h1 class="text-3xl font-bold mb-4 text-cyan-400">SHAPE WARS</h1>
+    <h1 class="text-3xl font-bold mb-4 text-cyan-400">SHAPE WARS: ENDLESS SIEGE</h1>
 
-    <div id="game-container" class="relative">
-        
-        <div id="gameBriefingScreen" class="overlay-screen">
-            <div class="briefing-box">
-                <h2 class="text-4xl">MISSION BRIEFING</h2>
-                <p>
-                    **Urgent Deployment!** The Pink Circles have initiated a mass riot, breaching containment zones across the sector. They are deemed **hostile and irreformable**.
-                </p>
-                <p>
-                    Your superior officer has authorized **lethal force**. Eliminate the hostile Pink Circle threat by any means necessary. Failure is not an option, soldier.
-                </p>
-                <button class="control-button text-xl px-8 py-3" onclick="startGame()">DEPLOY</button>
-            </div>
-        </div>
-        
-        <div id="gameOverScreen" class="overlay-screen">
-            <h2 class="text-5xl font-extrabold text-red-500 mb-6 neon-text" style="text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;">GAME OVER</h2>
-            <div id="finalScore" class="text-3xl text-white mb-4"></div>
-            <div id="highScoreText" class="text-xl text-yellow-400 mb-6"></div>
-            <button class="control-button text-xl px-8 py-3" onclick="restartGame()">RESTART</button>
-        </div>
-        
-        <canvas id="gameCanvas"></canvas>
-
-        <div class="hud-panel">
-            <div class="flex items-center space-x-2">
-                <span class="text-white">HP:</span>
-                <div class="health-bar-container">
-                    <div id="playerHealthBar"></div>
+    <div id="content-wrapper">
+        <div id="game-container" class="relative">
+            
+            <div id="gameBriefingScreen" class="overlay-screen">
+                <div class="briefing-box">
+                    <h2 class="text-4xl">ENDLESS SIEGE BRIEFING</h2>
+                    <p>
+                        The Pink Circle threat is now sector-wide, and there is no escape. Eliminate the hostiles for as long as you can across the **massive battleground**. Every **10 kills** an **Omega Core** will be deployed.
+                    </p>
+                    <p>
+                        The siege is endless. Your mission is to survive, rack up a massive score, and set a new **High Score** before your inevitable destruction.
+                    </p>
+                    <button class="control-button text-xl px-8 py-3" onclick="startGame()">DEPLOY</button>
                 </div>
             </div>
-            <div class="hud-item">Score: <span id="scoreDisplay">0</span></div>
             
-            <div class="hud-item flex items-center">
-                <span class="text-white mr-2">Stats:</span>
-                <span id="fireRateDisplay" class="stat-display bg-green-800/50">Rate: 25</span>
-                <span id="defenseDisplay" class="stat-display bg-red-800/50">Def: 0%</span>
-                <span id="multiShotDisplay" class="stat-display bg-pink-800/50">Shots: 1</span>
-                <span id="sizeDisplay" class="stat-display bg-yellow-800/50">Size: 1x</span>
-                <span id="waveDisplay" class="stat-display bg-orange-800/50">Wave: 0x</span> 
+            <div id="gameOverScreen" class="overlay-screen">
+                <h2 class="text-5xl font-extrabold text-red-500 mb-6 neon-text" style="text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;">GAME OVER</h2>
+                <div id="finalScore" class="text-3xl text-white mb-4"></div>
+                <div id="highScoreText" class="text-xl text-yellow-400 mb-6"></div>
+                <button class="control-button text-xl px-8 py-3" onclick="restartGame()">RESTART</button>
             </div>
             
-            <div class="hud-item">Enemies: <span id="enemyCount">0</span></div>
-            <div class="hud-item">Level Kills: <span id="killCountDisplay">0 / 20</span></div>
+            <canvas id="gameCanvas"></canvas>
+
+            <div class="hud-panel">
+                <div class="flex items-center space-x-2">
+                    <span class="text-white">HP:</span>
+                    <div class="health-bar-container">
+                        <div id="playerHealthBar"></div>
+                    </div>
+                </div>
+                <div class="hud-item">Score: <span id="scoreDisplay">0</span></div>
+                
+                <div class="hud-item flex items-center">
+                    <span class="text-white mr-2">Stats:</span>
+                    <span id="fireRateDisplay" class="stat-display bg-green-800/50">Rate: 25</span>
+                    <span id="defenseDisplay" class="stat-display bg-red-800/50">Def: 0%</span>
+                    <span id="multiShotDisplay" class="stat-display bg-pink-800/50">Shots: 1</span>
+                    <span id="sizeDisplay" class="stat-display bg-yellow-800/50">Size: 1x</span>
+                    <span id="waveDisplay" class="stat-display bg-orange-800/50">Diff: 1.0x</span> 
+                </div>
+                
+                <div id="bossHealthContainer" class="w-full mt-2 hidden">
+                    <div class="text-center text-white text-lg font-bold">BOSS DETECTED: <span id="bossName">Omega Core</span></div>
+                    <div class="health-bar-container w-full h-6 bg-gray-900 border-2 border-red-500">
+                        <div id="bossHealthBar" class="h-full" style="width: 100%; background: linear-gradient(90deg, #ff0000, #ff8800);"></div>
+                    </div>
+                </div>
+
+                <div class="hud-item">Lives: <span id="livesDisplay">3</span></div>
+                <div class="hud-item">Enemies: <span id="enemyCount">0</span></div>
+                <div class="hud-item">Kills: <span id="killCountDisplay">0</span></div>
+            </div>
         </div>
     </div>
-
+    
+    <div id="ad-container">
+    <p><em><strong>USE CODE "BEOLTK" AT SIGN-UP TO GET 500 SATOSHIS TOTALLY FREE!</strong></em></p>
+        <a href="https://www.speed.app/" target="_blank">
+            <img src="https://github.com/Rustycloudz/images/raw/main/rusty%40pc_lightning_ad.jpg" alt="Advertisement: Rusty's PC Lightning - Fast, Furious, and Fully Charged!" />
+        </a>
+    </div>
+    <div id="ad-container-left">
+    <P><em><strong>WE HAVE AMAZON AFFILIATION, SO SHOPPING WITH US HELPS!</strong></em></P>
+        <a href="https://amzn.to/3X5cWaR" target="_blank">
+            <img src="https://github.com/Rustycloudz/images/raw/main/drone.png" alt="Advertisement: Drone Tech - Automated Defense Systems" />
+        </a>
+    </div>
     <div class="mt-4 text-center text-sm">
         <p>Move: **W A S D** or **Arrow Keys** | Shoot: **Mouse Click**</p>
     </div>
@@ -216,7 +280,7 @@
     <audio id="powerupSound" src="https://www.myinstants.com/media/sounds/bruh-sound-effect_WstdzdM.mp3" preload="auto"></audio>
     <audio id="deathSound" src="https://www.myinstants.com/media/sounds/uuhhh_iqsgYFh.mp3" preload="auto"></audio>
     <script>
-        // --- LOCAL STORAGE FUNCTIONS ---
+        // --- LOCAL STORAGE FUNCTIONS (No Change) ---
         window.saveHighScore = function (currentScore, currentKills) {
             const existingScoreData = localStorage.getItem('shapeRoyaleHighScore');
             let existingHighScore = { score: 0, kills: 0 };
@@ -255,6 +319,7 @@
         const enemyCountDisplay = document.getElementById('enemyCount');
         const healthBar = document.getElementById('playerHealthBar');
         const killCountDisplay = document.getElementById('killCountDisplay');
+        const livesDisplay = document.getElementById('livesDisplay'); 
         
         // References to the overlays
         const gameBriefingScreen = document.getElementById('gameBriefingScreen');
@@ -263,8 +328,11 @@
         const highScoreText = document.getElementById('highScoreText');
         const gameOverTitle = document.querySelector('#gameOverScreen h2');
         
-        // Removed reference to goalReachedScreen
-
+        // BOSS HUD elements
+        const bossHealthContainer = document.getElementById('bossHealthContainer');
+        const bossHealthBar = document.getElementById('bossHealthBar');
+        const bossNameDisplay = document.getElementById('bossName');
+        
         // Reference to the audio elements
         const shootSound = document.getElementById('shootSound');
         const hurtSound = document.getElementById('hurtSound');
@@ -274,27 +342,59 @@
 
         // Game Constants
         let gameActive = false;
+        
+        // LIVES VARIABLE
+        let playerLives = 3; 
+
+        // WORLD/CAMERA CONSTANTS
         const CANVAS_WIDTH = 800;
         const CANVAS_HEIGHT = 500;
+        const WORLD_WIDTH = 4000;
+        const WORLD_HEIGHT = 4000;
+        let cameraX = 0; 
+        let cameraY = 0;
+        
         let score = 0;
         let kills = 0; 
-        const KILLS_FOR_BOSS = 20; 
-        let bossSpawned = false; 
-        let levelComplete = false; 
-        let mouseX = CANVAS_WIDTH / 2;
-        let mouseY = CANVAS_HEIGHT / 2;
+        
+        let mouseX_Screen = CANVAS_WIDTH / 2; 
+        let mouseY_Screen = CANVAS_HEIGHT / 2;
+        let mouseX_World = WORLD_WIDTH / 2; 
+        let mouseY_World = WORLD_HEIGHT / 2;
+        
         const keys = {};
         
-        // NEW: Goal Zone Definition
-        const GOAL_ZONE = {
-            x: CANVAS_WIDTH - 50,
-            y: 0,
-            width: 50,
-            height: CANVAS_HEIGHT
-        };
-
         // Global arrays for Obstacles
         const obstacles = [];
+        
+        // Game/Enemy Spawning Constants
+        const MAX_OBSTACLES = 40; 
+        const MAX_ENEMIES = 50; 
+        let difficultyFactor = 1.0; 
+        let difficultyTimer = 0;
+        const DIFFICULTY_INCREASE_RATE = 600; 
+        let ENEMY_SPAWN_RATE_BASE = 140; 
+        const POWERUP_SPAWN_RATE = 300; 
+        let enemySpawnTimer = 0;
+        let powerupSpawnTimer = 0;
+        
+        // BOSS CONSTANTS/VARIABLES
+        const BOSS_KILL_THRESHOLD = 10;
+        let killsSinceLastBoss = 0;
+        let bossesDefeatedCount = 0; 
+        let currentBoss = null; 
+
+        // NEW ENEMY WAVE STATE
+        let currentEnemyShapeSides = 0; // 0: circle, 8: octagon, 4: square, 3: triangle
+        let currentEnemyColor = '#ff0077';
+        let currentEnemyBaseDamage = 5; 
+        let currentEnemyBaseHealth = 20; 
+        // END NEW ENEMY WAVE STATE
+
+        // Background Image for Tiling
+        const backgroundTile = new Image();
+        backgroundTile.src = 'https://cdn.pixabay.com/photo/2013/07/25/11/50/dirt-166708_1280.png'; 
+        const TILE_SIZE = 128; 
 
         // Canvas Setup 
         canvas.width = CANVAS_WIDTH;
@@ -314,23 +414,17 @@
             return Math.atan2(y2 - y1, x2 - x1);
         }
 
-        // --- COLLISION HELPER FUNCTIONS ---
+        // --- COLLISION HELPER FUNCTIONS (No Change) ---
         function checkCircleRectCollision(circle, rect) {
-            // Find the closest point on the rectangle to the center of the circle
             const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
             const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
-
-            // Calculate the distance between the circle's center and this closest point
             const distX = circle.x - closestX;
             const distY = circle.y - closestY;
-
-            // If the distance is less than the circle's radius, there's a collision
             const distance = Math.hypot(distX, distY);
             return distance < circle.radius;
         }
 
         function preventMovementThroughRect(shape, rect) {
-            // Find the closest point on the rectangle to the center of the shape
             const closestX = Math.max(rect.x, Math.min(shape.x, rect.x + rect.width));
             const closestY = Math.max(rect.y, Math.min(shape.y, rect.y + rect.height));
 
@@ -340,18 +434,39 @@
             const distance = Math.hypot(distX, distY);
             
             if (distance < shape.radius) {
-                // Collision detected. Resolve the overlap.
                 const overlap = shape.radius - distance;
-                
-                // Calculate normalized direction of separation
                 const angle = Math.atan2(distY, distX);
-                
-                // Push the shape out of the rectangle along the separation vector
                 shape.x += Math.cos(angle) * overlap;
                 shape.y += Math.sin(angle) * overlap;
             }
         }
         // --- END COLLISION HELPERS ---
+        
+        // Draw a tiled background with parallax effect
+        function drawBackground() {
+            const PARALLAX_FACTOR = 0.3; 
+            
+            const bgOffsetX = cameraX * PARALLAX_FACTOR;
+            const bgOffsetY = cameraY * PARALLAX_FACTOR;
+            
+            const startX = Math.floor(bgOffsetX / TILE_SIZE) * TILE_SIZE;
+            const startY = Math.floor(bgOffsetY / TILE_SIZE) * TILE_SIZE;
+            
+            const renderOffsetX = bgOffsetX % TILE_SIZE;
+            const renderOffsetY = bgOffsetY % TILE_SIZE;
+            
+            for (let x = -renderOffsetX - TILE_SIZE; x < CANVAS_WIDTH + TILE_SIZE; x += TILE_SIZE) {
+                for (let y = -renderOffsetY - TILE_SIZE; y < CANVAS_HEIGHT + TILE_SIZE; y += TILE_SIZE) {
+                    if (backgroundTile.complete && backgroundTile.naturalWidth !== 0) {
+                        ctx.drawImage(backgroundTile, x, y, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillStyle = '#1f242e';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+            }
+        }
+
 
         // --- ENTITY CLASSES ---
         class Shape {
@@ -361,9 +476,9 @@
                 this.velocity = { x: 0, y: 0 }; this.speed = 3;
             }
             draw() {
+                // Default draw is a circle
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
                 ctx.fillStyle = this.color; ctx.fill();
-                // ADDED OUTLINE
                 ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 2;
                 ctx.stroke();
@@ -378,7 +493,8 @@
 
         class Player extends Shape {
             constructor(x, y) {
-                super(x, y, 15, '#00ffff', 150); 
+                // Player Health is 500 (INCREASED FROM 250)
+                super(x, y, 15, '#00ffff', 500); 
                 this.fireRate = 25; 
                 this.fireCooldown = 0;
                 this.defense = 0; 
@@ -390,19 +506,40 @@
             handleInput() { 
                 this.velocity.x = 0; this.velocity.y = 0;
                 if (keys['w'] || keys['arrowup']) { this.velocity.y = -this.speed; }
-                if (keys['s'] || keys['arrowdown']) { this.velocity.y = this.speed; }
                 if (keys['a'] || keys['arrowleft']) { this.velocity.x = -this.speed; }
                 if (keys['d'] || keys['arrowright']) { this.velocity.x = this.speed; }
+                if (keys['s'] || keys['arrowdown']) { this.velocity.y = this.speed; }
+                
                 if (this.velocity.x !== 0 && this.velocity.y !== 0) {
                     this.velocity.x *= 0.707; this.velocity.y *= 0.707;
                 }
             }
             
             draw() {
-                // Call base Shape draw (now includes outline)
                 super.draw(); 
                 
-                const angle = getAngle(this.x, this.y, mouseX, mouseY);
+                // Motion trail/thrust effect
+                if (this.velocity.x !== 0 || this.velocity.y !== 0) {
+                    const thrustSize = 5;
+                    const angle = Math.atan2(-this.velocity.y, -this.velocity.x); 
+                    
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(angle);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(-this.radius, 0); 
+                    ctx.lineTo(-this.radius - thrustSize * 2, thrustSize); 
+                    ctx.lineTo(-this.radius - thrustSize * 2, -thrustSize); 
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = `rgba(0, 255, 255, ${Math.min(1, Math.hypot(this.velocity.x, this.velocity.y) / this.speed)})`; 
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Turret 
+                const angle = getAngle(this.x, this.y, mouseX_World, mouseY_World);
                 const barrelLength = this.radius * 1.5; 
                 const barrelWidth = 6; 
 
@@ -418,14 +555,8 @@
 
             update() {
                 super.update();
-                // Boundary clamping - REMOVED RIGHT BOUNDARY CLAMPING TO ALLOW GOAL ENTRY
-                this.x = Math.max(this.radius, this.x); // Left edge clamp remains
-                this.y = Math.max(this.radius, Math.min(CANVAS_HEIGHT - this.radius, this.y)); // Top/Bottom clamp remains
-                
-                // If the level is complete, we stop clamping the right side, allowing the player to move into the Goal Zone
-                if (!levelComplete) {
-                    this.x = Math.min(CANVAS_WIDTH - this.radius, this.x);
-                }
+                this.x = Math.max(this.radius, Math.min(WORLD_WIDTH - this.radius, this.x));
+                this.y = Math.max(this.radius, Math.min(WORLD_HEIGHT - this.radius, this.y)); 
             }
             updateHUD() {
                 const percentage = (this.health / this.maxHealth) * 100;
@@ -439,17 +570,56 @@
         }
 
         class Enemy extends Shape {
-            constructor(x, y, radius = 12, color = '#ff0077', health = 20) {
-                super(x, y, radius, color, health); 
-                this.speed = 1.8; 
-                this.fireRate = 80; 
+            // Added sides and baseDamage
+            constructor(x, y, radius = 12, color = '#ff0077', health = 20, sides = 0, baseDamage = 5) { 
+                const initialHealth = health * difficultyFactor;
+                const initialSpeed = 1.8 * Math.min(2.0, difficultyFactor); 
+                const initialRadius = radius * Math.min(1.5, Math.sqrt(difficultyFactor));
+                
+                super(x, y, initialRadius, color, initialHealth); 
+                this.speed = initialSpeed; 
+                this.fireRate = 80 / difficultyFactor; 
                 this.fireCooldown = Math.random() * this.fireRate;
                 
-                // Enemy Powerup Stats
                 this.bulletSizeModifier = 1.0;
                 this.multiShotCount = 1;
                 this.waveShotAmplitude = 0;
+                this.sides = sides; // Stored the sides count
+                this.baseDamage = baseDamage; // Stored base damage
             }
+            
+            draw() {
+                if (this.sides <= 0) {
+                    // Draw circle (default)
+                    super.draw(); 
+                    return;
+                }
+
+                // Draw polygon (Octagon, Square, Triangle, etc.)
+                ctx.beginPath();
+                const numSides = this.sides;
+                // Add a slight rotation to center polygons visually
+                // Triangles look best when pointed up (0 rotation) or with a slight offset.
+                const rotation = numSides === 3 ? -Math.PI / 2 : Math.PI / numSides; 
+                
+                for (let i = 0; i < numSides; i++) {
+                    const angle = (i / numSides) * Math.PI * 2 + rotation;
+                    const x = this.x + this.radius * Math.cos(angle);
+                    const y = this.y + this.radius * Math.sin(angle);
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.fillStyle = this.color; 
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
             chase(target) {
                 const angle = getAngle(this.x, this.y, target.x, target.y);
                 this.velocity.x = Math.cos(angle) * this.speed;
@@ -459,9 +629,9 @@
                 this.fireCooldown--;
                 if (this.fireCooldown <= 0) {
                     const angle = getAngle(this.x, this.y, target.x, target.y);
-                    const baseBulletSpeed = 5;
+                    const baseBulletSpeed = 5 * Math.min(1.5, difficultyFactor);
                     const baseBulletRadius = 5;
-                    const baseDamage = 5;
+                    const baseDamage = this.baseDamage * difficultyFactor; // Use stored baseDamage
 
                     const finalRadius = baseBulletRadius * this.bulletSizeModifier;
                     const finalDamage = baseDamage * this.bulletSizeModifier;
@@ -476,7 +646,7 @@
                             baseBulletSpeed, 
                             finalRadius, 
                             'enemy', 
-                            '#ff44aa', 
+                            this.color, // Use enemy color for bullets
                             finalDamage,
                             this.waveShotAmplitude 
                         ));
@@ -490,63 +660,67 @@
                 super.update();
             }
         }
+        
+        class BossEnemy extends Enemy {
+            // MODIFIED: Takes a bossId to determine type
+            constructor(x, y, bossId) { 
+                const baseHealth = 500;
+                const baseRadius = 40;
+                const baseSpeed = 2.5; 
 
-        // NEW: Boss Class inherits from Enemy
-        class Boss extends Enemy {
-            constructor(x, y) {
-                // Large radius, very high health, slow speed
-                super(x, y, 40, '#ff0000', 500); 
-                this.speed = 1.0; 
+                const scaledHealth = baseHealth * difficultyFactor * 0.5; 
+                const scaledRadius = baseRadius * Math.min(2, Math.sqrt(difficultyFactor)); 
+                const scaledSpeed = baseSpeed * Math.min(1.5, Math.sqrt(difficultyFactor));
+                
+                let bossColor, bossSides, bossName, bulletColor;
+                
+                // --- NEW BOSS CYCLE LOGIC (3-Boss rotation) ---
+                if (bossId % 3 === 1) { 
+                    // Boss 1: Purple Circle (Omega Core)
+                    bossColor = '#8A2BE2'; // BlueViolet
+                    bossSides = 0; // Circle
+                    bossName = "Omega Core";
+                    bulletColor = '#ff00ff';
+                } else if (bossId % 3 === 2) { 
+                    // Boss 2: Orange Octagon (Octo Sentinel)
+                    bossColor = '#ffa500'; // Orange
+                    bossSides = 8; // Octagon
+                    bossName = "Octo Sentinel";
+                    bulletColor = '#ff4500'; 
+                } else { // 3rd, 6th, 9th... 
+                    // Boss 3: Purple Square (Chrono Cube) - NEW
+                    bossColor = '#6A0DAD'; // Dark Purple
+                    bossSides = 4; // Square
+                    bossName = "Chrono Cube"; 
+                    bulletColor = '#9400D3'; // Darker Purple bullet
+                }
+                // --- END NEW BOSS CYCLE LOGIC ---
+                
+                // Boss uses a higher base damage (8) regardless of shape, but scaled by difficulty
+                super(x, y, scaledRadius, bossColor, scaledHealth, bossSides, 8); 
+                this.speed = scaledSpeed; 
                 this.fireRate = 40; 
-                this.multiShotCount = 3;
                 this.bulletSizeModifier = 1.5;
-                this.waveShotAmplitude = 2; // Fires wavy shots
+                this.multiShotCount = 3;
+                this.waveShotAmplitude = 2; 
+                this.name = bossName;
+                this.bulletColor = bulletColor; 
             }
             
-            draw() {
-                super.draw(); // This now draws the outline
-
-                // Draw a flashing border over the outline
-                const pulse = Math.sin(Date.now() / 100) * 0.1 + 0.9;
-                ctx.strokeStyle = `rgba(255, 0, 0, ${pulse})`;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2, false);
-                ctx.stroke();
-
-                // Draw Boss Health Bar
-                const healthBarWidth = 100;
-                const healthBarHeight = 10;
-                const xOffset = this.x - healthBarWidth / 2;
-                const yOffset = this.y - this.radius - 20;
-                
-                ctx.fillStyle = '#444444';
-                ctx.fillRect(xOffset, yOffset, healthBarWidth, healthBarHeight);
-                
-                const currentHealthWidth = (this.health / this.maxHealth) * healthBarWidth;
-                ctx.fillStyle = '#00ff77';
-                ctx.fillRect(xOffset, yOffset, currentHealthWidth, healthBarHeight);
-            }
-            
-            // Override aiShoot to be more powerful/complex
             aiShoot(target) {
                 this.fireCooldown--;
                 if (this.fireCooldown <= 0) {
-                    const numShots = this.multiShotCount + 2; 
                     const angle = getAngle(this.x, this.y, target.x, target.y);
-                    const baseBulletSpeed = 6;
-                    const baseBulletRadius = 6;
-                    const baseDamage = 10; 
+                    const baseBulletSpeed = 6 * 2.0; // Hardcoded boss speed modifier
+                    const baseBulletRadius = 5;
+                    const baseDamage = this.baseDamage * 1.5 * difficultyFactor; // Boss damage calculation
 
                     const finalRadius = baseBulletRadius * this.bulletSizeModifier;
                     const finalDamage = baseDamage * this.bulletSizeModifier;
-                    
-                    // Use a unique bullet color
-                    const bulletColor = '#ff00ff'; 
 
-                    for (let i = 0; i < numShots; i++) {
-                        // Increased spread for boss
-                        const spreadAngle = 0.2 * (i - (numShots - 1) / 2); 
+                    const totalShots = 5; 
+                    for (let i = 0; i < totalShots; i++) {
+                        const spreadAngle = 0.2 * (i - (totalShots - 1) / 2);
                         
                         projectiles.push(new Projectile(
                             this.x, 
@@ -555,33 +729,34 @@
                             baseBulletSpeed, 
                             finalRadius, 
                             'enemy', 
-                            bulletColor, 
+                            this.bulletColor, // Use boss's specific bullet color
                             finalDamage,
-                            this.waveShotAmplitude
+                            this.waveShotAmplitude 
                         ));
                     }
-                    this.fireCooldown = this.fireRate + (Math.random() * 20 - 10);
+                    this.fireCooldown = this.fireRate + (Math.random() * 50);
                 }
             }
-        }
-        // END Boss Class
 
+            updateBossHealthBar() {
+                const percentage = (this.health / this.maxHealth) * 100;
+                bossHealthBar.style.width = `${Math.max(0, percentage)}%`;
+            }
+        }
 
         class Projectile extends Shape {
             constructor(x, y, angle, speed, radius, type, color, damage, waveAmplitude = 0) {
                 super(x, y, radius, color, 1);
                 this.damage = damage; 
                 this.speed = speed; 
-                this.type = type; // 'player' or 'enemy'
+                this.type = type; 
                 
                 this.waveAmplitude = waveAmplitude; 
                 this.travelDistance = 0; 
                 
-                // Store base movement vector
                 this.baseVelocityX = Math.cos(angle) * speed; 
                 this.baseVelocityY = Math.sin(angle) * speed;
                 
-                // Store perpendicular vector for wave movement
                 this.perpendicularAngle = angle + Math.PI / 2;
                 
                 if (waveAmplitude === 0) {
@@ -632,121 +807,83 @@
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = this.color;
                 
-                // --- POWERUP DRAWING LOGIC ---
                 const r = this.radius;
 
                 if (this.type === 'HealthPack') {
-                    // Draw a heart shape for HealthPack (Blue)
                     const hx = this.x; 
                     const hy = this.y; 
                     
                     ctx.beginPath();
                     ctx.moveTo(hx, hy + r * 1.2);
-                    ctx.bezierCurveTo(
-                        hx + r * 1.5, hy - r * 0.5,
-                        hx + r * 0.5, hy - r * 1.5,
-                        hx, hy - r * 0.5
-                    );
-                    ctx.bezierCurveTo(
-                        hx - r * 0.5, hy - r * 1.5,
-                        hx - r * 1.5, hy - r * 0.5,
-                        hx, hy + r * 1.2
-                    );
+                    ctx.bezierCurveTo( hx + r * 1.5, hy - r * 0.5, hx + r * 0.5, hy - r * 1.5, hx, hy - r * 0.5 );
+                    ctx.bezierCurveTo( hx - r * 0.5, hy - r * 1.5, hx - r * 1.5, hy - r * 0.5, hx, hy + r * 1.2 );
+                    ctx.closePath();
                     ctx.fill();
                     
-                    // Added Outline
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                     
                 } else if (this.type === 'MultiShot') {
-                    // Draw a plus shape for MultiShot (Pink)
-                    const size = r * 0.3; // Half the width of the bars
-                    const length = r * 2; // Full length of the bars
+                    const size = r * 0.3; 
+                    const length = r * 2; 
                     const x_start = this.x - r;
                     const y_start = this.y - r;
 
                     ctx.beginPath();
-                    
-                    // Horizontal bar
                     ctx.rect(x_start, this.y - size, length, size * 2); 
-                    
-                    // Vertical bar
                     ctx.rect(this.x - size, y_start, size * 2, length); 
-                    
                     ctx.fill();
                     
-                    // Added Outline
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                 
                 } else if (this.type === 'BulkShot') {
-                    // Draw an arrow pointing up (triangle) for BulkShot (Yellow)
                     const ax = this.x;
                     const ay = this.y;
                     
                     ctx.beginPath();
-                    // Point
                     ctx.moveTo(ax, ay - r);
-                    // Bottom left corner
                     ctx.lineTo(ax - r, ay + r / 2);
-                    // Bottom right corner
                     ctx.lineTo(ax + r, ay + r / 2);
                     ctx.closePath();
                     ctx.fill();
                     
-                    // Added Outline
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                     
                 } else if (this.type === 'WaveShot') {
-                    // Draw a wavy line segment for WaveShot (Orange)
-                    
                     const startX = this.x - r;
                     const endX = this.x + r;
                     const halfR = r / 2;
                     
-                    // --- REVISED LOGIC FOR WAVE SHOT (Stroke-based) ---
                     ctx.beginPath();
                     ctx.moveTo(startX, this.y);
-                    // Two Bezier curves for a single sine-like wave
-                    ctx.bezierCurveTo(
-                        this.x - halfR, this.y - r, // Control point 1 (up)
-                        this.x + halfR, this.y + r, // Control point 2 (down)
-                        endX, this.y                 // End point
-                    );
+                    ctx.bezierCurveTo( this.x - halfR, this.y - r, this.x + halfR, this.y + r, endX, this.y );
                     
-                    // 1. Draw black outline (thicker stroke)
                     ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 5;
+                    ctx.lineWidth = 5; 
                     ctx.lineCap = 'round';
                     ctx.stroke();
                     
-                    // 2. Draw colored line on top (original thickness)
                     ctx.strokeStyle = this.color;
                     ctx.lineWidth = 3; 
                     ctx.stroke();
-                    // --- END REVISED LOGIC ---
-                    
-                    ctx.lineCap = 'butt'; // Reset line cap
+                    ctx.lineCap = 'butt'; 
                     
                 } else if (this.type === 'FireRateBoost') {
-                    // Draw a snowflake shape (three intersecting lines) for FireRateBoost (Green)
-                    
-                    const len = r * 1.8; // Total length of the arm
+                    const len = r * 1.8; 
                     const halfLen = len / 2;
                     
                     ctx.lineCap = 'round';
                     ctx.save();
                     ctx.translate(this.x, this.y);
 
-                    // Draw three lines, 60 degrees apart, to form a 6-pointed star/snowflake
                     for(let i = 0; i < 3; i++){
-                        ctx.rotate(Math.PI / 3 * i); // Rotate by 0, 60, 120 degrees
+                        ctx.rotate(Math.PI / 3 * i); 
                         
-                        // 1. Draw Black Outline (Thicker)
                         ctx.beginPath();
                         ctx.moveTo(-halfLen, 0);
                         ctx.lineTo(halfLen, 0);
@@ -754,7 +891,6 @@
                         ctx.lineWidth = 5; 
                         ctx.stroke();
                         
-                        // 2. Draw Colored Foreground (Original Thickness)
                         ctx.beginPath();
                         ctx.moveTo(-halfLen, 0);
                         ctx.lineTo(halfLen, 0);
@@ -764,53 +900,36 @@
                     }
 
                     ctx.restore();
-                    ctx.lineCap = 'butt'; // Reset line cap
+                    ctx.lineCap = 'butt'; 
                     
                 } else if (this.type === 'DefenseBoost') {
-                    // Draw a SHIELD shape for DefenseBoost (Red) - UPDATED SHAPE
                     const sx = this.x;
                     const sy = this.y;
-                    const sr = r * 1.5; // Shield size multiplier 
+                    const sr = r * 1.5; 
                     
                     ctx.beginPath();
-                    // Top edge (start from top-left)
                     ctx.moveTo(sx - sr * 0.8, sy - sr * 1.0); 
-                    // Top right corner
                     ctx.lineTo(sx + sr * 0.8, sy - sr * 1.0);
-                    // Right side
-                    ctx.quadraticCurveTo(
-                        sx + sr * 1.0, sy + sr * 0.0, // Control point 1 (right middle)
-                        sx + sr * 0.5, sy + sr * 1.0  // Mid-right point
-                    );
-                    // Bottom point (V shape)
+                    ctx.quadraticCurveTo( sx + sr * 1.0, sy + sr * 0.0, sx + sr * 0.5, sy + sr * 1.0 );
                     ctx.lineTo(sx, sy + sr * 1.5);
-                    // Left side
                     ctx.lineTo(sx - sr * 0.5, sy + sr * 1.0);
-                    ctx.quadraticCurveTo(
-                        sx - sr * 1.0, sy + sr * 0.0, // Control point 2 (left middle)
-                        sx - sr * 0.8, sy - sr * 1.0  // Back to top-left
-                    );
+                    ctx.quadraticCurveTo( sx - sr * 1.0, sy + sr * 0.0, sx - sr * 0.8, sy - sr * 1.0 );
                     ctx.closePath();
                     ctx.fill();
                     
-                    // Added Outline
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                     
                 } else {
-                    // Default fallback
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     ctx.fill();
                     
-                    // Added Outline
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.stroke();
                 }
-                // --- END POWERUP DRAWING LOGIC ---
-
                 ctx.shadowBlur = 0;
             }
         }
@@ -834,10 +953,6 @@
         let enemies = [];
         let projectiles = [];
         let powerups = [];
-        let enemySpawnTimer = 0;
-        const ENEMY_SPAWN_RATE = 140; 
-        let powerupSpawnTimer = 0;
-        const POWERUP_SPAWN_RATE = 300; 
 
         // Function called from the "DEPLOY" button
         window.startGame = function() {
@@ -846,23 +961,66 @@
             gameActive = true;
             requestAnimationFrame(gameLoop);
         }
+        
+        function generateRandomObstacles() {
+            obstacles.length = 0;
+            const numObstacles = MAX_OBSTACLES; 
+            
+            for (let i = 0; i < numObstacles; i++) {
+                const width = Math.random() * 100 + 30; 
+                const height = Math.random() * 100 + 30; 
+                
+                let x, y;
+                let validPosition = false;
+                const minDistanceToCenter = 150; 
+                const worldCenterX = WORLD_WIDTH / 2;
+                const worldCenterY = WORLD_HEIGHT / 2;
+                
+                while (!validPosition) {
+                    x = Math.random() * (WORLD_WIDTH - width);
+                    y = Math.random() * (WORLD_HEIGHT - height);
+                    
+                    const obsCenterX = x + width / 2;
+                    const obsCenterY = y + height / 2;
+                    
+                    if (Math.hypot(obsCenterX - worldCenterX, obsCenterY - worldCenterY) > minDistanceToCenter) {
+                        validPosition = true;
+                    }
+                }
+                
+                obstacles.push(new Obstacle(x, y, width, height));
+            }
+        }
 
         function initGame() {
-            player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
             enemies = [];
             projectiles = [];
             powerups = [];
             score = 0;
             kills = 0;
-            bossSpawned = false;
-            levelComplete = false; 
-            gameOverScreen.style.display = 'none';
-            // Removed: goalReachedScreen.style.display = 'none'; 
+            difficultyFactor = 1.0;
+            difficultyTimer = 0;
+            enemySpawnTimer = 0;
+            powerupSpawnTimer = 0;
             
-            // Ensure Game Over screen reverts to default look
-            gameOverScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
-            gameOverTitle.textContent = 'GAME OVER';
-            gameOverTitle.style.textShadow = '0 0 10px #ff0000, 0 0 20px #ff0000';
+            // Boss Reset
+            currentBoss = null;
+            killsSinceLastBoss = 0;
+            bossesDefeatedCount = 0; 
+            bossHealthContainer.style.display = 'none';
+            
+            // LIVES RESET
+            playerLives = 3; 
+            
+            // NEW ENEMY STATE RESET (Default: Pink Circle)
+            currentEnemyShapeSides = 0; 
+            currentEnemyColor = '#ff0077';
+            currentEnemyBaseDamage = 5;
+            currentEnemyBaseHealth = 20;
+            // END NEW ENEMY STATE RESET
+
+            gameOverScreen.style.display = 'none';
 
             player.defense = 0;
             player.bulletSizeModifier = 1.0;
@@ -870,73 +1028,123 @@
             player.fireRate = 25; 
             player.waveShotAmplitude = 0;
 
-            // Initialize Obstacles on the map
-            obstacles.length = 0; // Clear the array when restarting
-            obstacles.push(
-                new Obstacle(100, 100, 50, 50),
-                new Obstacle(CANVAS_WIDTH - 150, 100, 50, 50),
-                new Obstacle(100, CANVAS_HEIGHT - 150, 50, 50),
-                new Obstacle(CANVAS_WIDTH - 150, CANVAS_HEIGHT - 150, 50, 50),
-                // A central rectangular barrier
-                new Obstacle(CANVAS_WIDTH/2 - 75, CANVAS_HEIGHT/2 - 10, 150, 20) 
-            );
+            generateRandomObstacles();
 
             updateHUD();
-            spawnEnemy();
+            for (let i = 0; i < 5; i++) {
+                spawnEnemy();
+            }
         }
 
         function updateHUD() {
             scoreDisplay.textContent = score;
             enemyCountDisplay.textContent = enemies.length;
-            killCountDisplay.textContent = `${kills} / ${KILLS_FOR_BOSS}`; 
+            killCountDisplay.textContent = kills; 
+            
+            livesDisplay.textContent = playerLives; 
             
             fireRateDisplay.textContent = `Rate: ${player.fireRate}`; 
             
             defenseDisplay.textContent = `Def: ${player.defense}%`;
             multiShotDisplay.textContent = `Shots: ${player.multiShotCount}`;
             sizeDisplay.textContent = `Size: ${player.bulletSizeModifier.toFixed(1)}x`;
-            waveDisplay.textContent = `Wave: ${player.waveShotAmplitude}x`;
+            waveDisplay.textContent = `Diff: ${difficultyFactor.toFixed(1)}x`;
             player.updateHUD();
+
+            if (currentBoss) {
+                currentBoss.updateBossHealthBar();
+            }
         }
 
         function spawnEnemy() { 
+            if (enemies.length >= MAX_ENEMIES) return; 
+            
             const side = Math.floor(Math.random() * 4);
             let x, y;
             const padding = 50;
-
+            
             switch (side) {
-                case 0: x = Math.random() * CANVAS_WIDTH; y = -padding; break;
-                case 1: x = Math.random() * CANVAS_WIDTH; y = CANVAS_HEIGHT + padding; break;
-                case 2: x = -padding; y = Math.random() * CANVAS_HEIGHT; break;
-                case 3: x = CANVAS_WIDTH + padding; y = Math.random() * CANVAS_HEIGHT; break;
+                case 0: 
+                    x = cameraX + Math.random() * CANVAS_WIDTH; 
+                    y = cameraY - padding; 
+                    break;
+                case 1: 
+                    x = cameraX + Math.random() * CANVAS_WIDTH; 
+                    y = cameraY + CANVAS_HEIGHT + padding; 
+                    break;
+                case 2: 
+                    x = cameraX - padding; 
+                    y = cameraY + Math.random() * CANVAS_HEIGHT; 
+                    break;
+                case 3: 
+                    x = cameraX + CANVAS_WIDTH + padding; 
+                    y = cameraY + Math.random() * CANVAS_HEIGHT; 
+                    break;
             }
-            enemies.push(new Enemy(x, y));
+            
+            x = Math.max(0, Math.min(WORLD_WIDTH, x));
+            y = Math.max(0, Math.min(WORLD_HEIGHT, y));
+            
+            // Use current wave state for new enemies
+            enemies.push(new Enemy(
+                x, 
+                y, 
+                12, 
+                currentEnemyColor, 
+                currentEnemyBaseHealth, 
+                currentEnemyShapeSides, 
+                currentEnemyBaseDamage 
+            ));
         }
         
-        // NEW: Boss spawn function
         function spawnBoss() {
-            bossSpawned = true;
+            if (currentBoss) return; 
+
+            let spawnX, spawnY;
+            const padding = 100;
+
+            switch (Math.floor(Math.random() * 4)) {
+                case 0: // Top
+                    spawnX = cameraX + CANVAS_WIDTH / 2;
+                    spawnY = cameraY - padding;
+                    break;
+                case 1: // Bottom
+                    spawnX = cameraX + CANVAS_WIDTH / 2;
+                    spawnY = cameraY + CANVAS_HEIGHT + padding;
+                    break;
+                case 2: // Left
+                    spawnX = cameraX - padding;
+                    spawnY = cameraY + CANVAS_HEIGHT / 2;
+                    break;
+                case 3: // Right
+                    spawnX = cameraX + CANVAS_WIDTH + padding;
+                    spawnY = cameraY + CANVAS_HEIGHT / 2;
+                    break;
+            }
             
-            enemies.length = 0; 
+            spawnX = Math.max(100, Math.min(WORLD_WIDTH - 100, spawnX));
+            spawnY = Math.max(100, Math.min(WORLD_HEIGHT - 100, spawnY));
             
-            const boss = new Boss(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-            enemies.push(boss);
-            
-            powerupSpawnTimer = -150; 
-            
-            killCountDisplay.textContent = "BOSS FIGHT!";
+            const nextBossId = bossesDefeatedCount + 1; 
+            currentBoss = new BossEnemy(spawnX, spawnY, nextBossId); 
+            enemies.push(currentBoss);
+
+            bossHealthContainer.style.display = 'block';
+            bossNameDisplay.textContent = currentBoss.name;
+            currentBoss.updateBossHealthBar();
         }
 
         function spawnPowerup() {
-            const x = Math.random() * (CANVAS_WIDTH - 100) + 50;
-            const y = Math.random() * (CANVAS_HEIGHT - 100) + 50;
+            const x = cameraX + Math.random() * CANVAS_WIDTH;
+            const y = cameraY + Math.random() * CANVAS_HEIGHT;
             powerups.push(new Powerup(x, y));
         }
 
         function fireWeapon() {
             if (player.fireCooldown > 0) return;
             shootSound.currentTime = 0; shootSound.play().catch(e => console.log("Audio play prevented:", e));
-            const angle = getAngle(player.x, player.y, mouseX, mouseY);
+            
+            const angle = getAngle(player.x, player.y, mouseX_World, mouseY_World);
             const baseBulletSpeed = 8; const baseBulletRadius = 5; const baseDamage = 12; 
             const finalRadius = baseBulletRadius * player.bulletSizeModifier;
             const finalDamage = baseDamage * player.bulletSizeModifier;
@@ -971,10 +1179,9 @@
 
         function handleCollisions() {
             
-            // --- Player and Enemies vs Powerups (Unified Logic) ---
+            // --- Player and Enemies vs Powerups (Logic unchanged) ---
             powerups = powerups.filter(powerup => {
                 
-                // 1. Check Player collision
                 if (checkCollision(player, powerup)) {
                     playPowerupSound();
                     
@@ -990,7 +1197,6 @@
                     return false; 
                 }
 
-                // 2. Check Enemy collision
                 for (let i = 0; i < enemies.length; i++) {
                     const enemy = enemies[i];
                     if (checkCollision(enemy, powerup)) {
@@ -1012,7 +1218,7 @@
                             case 'DefenseBoost': 
                                 enemy.maxHealth += 30;
                                 enemy.health = Math.min(enemy.maxHealth, enemy.health + 30);
-                                enemy.color = '#8b0000'; // Dark red for toughness
+                                enemy.color = '#8b0000'; 
                                 break;
                             case 'FireRateBoost': 
                                 enemy.fireRate = Math.max(10, enemy.fireRate - 10);
@@ -1027,10 +1233,8 @@
 
                 return true; 
             });
-            // ----------------------------------------------------
-
-
-            // Projectiles vs Obstacles (Player and Enemy projectiles)
+            
+            // Projectiles vs Obstacles (Logic unchanged) 
             projectiles = projectiles.filter(p => {
                 let destroyedByWall = false;
                 
@@ -1043,7 +1247,7 @@
                 return !destroyedByWall;
             });
             
-            // Player Projectiles vs Enemies
+            // Player Projectiles vs Enemies (Updated for Boss logic)
             projectiles = projectiles.filter(p => {
                 if (p.type === 'player') {
                     let hit = false;
@@ -1052,10 +1256,54 @@
                             enemy.takeDamage(p.damage);
                             hit = true;
                             if (enemy.isDead()) {
-                                score += 100; 
-                                if (!(enemy instanceof Boss)) {
-                                    kills++; 
+                                score += 100 * difficultyFactor; 
+                                kills++; 
+                                
+                                // Boss kill check logic
+                                if (enemy instanceof BossEnemy) {
+                                    currentBoss = null;
+                                    bossHealthContainer.style.display = 'none';
+                                    killsSinceLastBoss = 0; // Reset counter for the next boss
+                                    score += 5000; // Large bonus for defeating the boss
+                                    
+                                    // Grant +1 Life upon Boss Defeat
+                                    playerLives = Math.min(99, playerLives + 1); 
+                                    
+                                    bossesDefeatedCount++; // INCREMENT BOSS DEFEAT COUNT
+                                    
+                                    if (bossesDefeatedCount === 1) { 
+                                        // WAVE 2: Orange Octagons (After Boss 1)
+                                        currentEnemyShapeSides = 8; 
+                                        currentEnemyColor = '#ffa500'; 
+                                        currentEnemyBaseDamage = 7;
+                                        currentEnemyBaseHealth = 30;
+                                    } else if (bossesDefeatedCount === 2) {
+                                        // WAVE 3: Purple Squares (After Boss 2)
+                                        currentEnemyShapeSides = 4; // Square
+                                        currentEnemyColor = '#6A0DAD'; // Dark Purple
+                                        currentEnemyBaseDamage = 10;
+                                        currentEnemyBaseHealth = 45;
+                                    } else if (bossesDefeatedCount === 3) {
+                                        // WAVE 4: Yellow Triangles (After Boss 3)
+                                        currentEnemyShapeSides = 3; // Triangle
+                                        currentEnemyColor = '#ffff00'; // Yellow
+                                        currentEnemyBaseDamage = 15; // Increase base damage
+                                        currentEnemyBaseHealth = 60; // Increase base health
+                                    } else { 
+                                        // WAVE 5, 6, 7... (After Boss 4, 5, 6...)
+                                        // Cycle back to a stronger version of Wave 1/Circles, and increase base stats significantly
+                                        currentEnemyShapeSides = 0; 
+                                        currentEnemyColor = '#ff0077'; // Revert to pink/red circle color
+                                        currentEnemyBaseDamage += 5; // Significant permanent damage increase
+                                        currentEnemyBaseHealth += 20; // Significant permanent health increase
+                                    }
+                                    
+                                    playDeathSound();
+                                    return false;
+                                } else {
+                                    killsSinceLastBoss++; // Increment only for non-boss enemies
                                 }
+                                
                                 playDeathSound();
                                 return false;
                             }
@@ -1067,7 +1315,7 @@
                 return true;
             });
 
-            // Enemy Projectiles vs Player
+            // Enemy Projectiles vs Player (Logic unchanged)
             projectiles = projectiles.filter(p => {
                 if (p.type === 'enemy' && checkCollision(p, player)) {
                     player.takeDamage(p.damage); playHurtSound();
@@ -1076,20 +1324,20 @@
                 return true;
             });
 
-            // Player vs Enemies (Contact damage)
+            // Player vs Enemies (Contact damage - Logic unchanged)
             enemies.forEach(enemy => {
                 if (checkCollision(player, enemy)) {
                     const damageBefore = player.health;
-                    player.takeDamage(0.5); 
+                    player.takeDamage(0.5 * difficultyFactor); 
                     if (player.health < damageBefore) { playContactSound(); }
                 }
             });
 
-            // Projectiles cleanup
-            const OFF_SCREEN_BUFFER = 500;
+            // Projectiles cleanup (Logic unchanged)
+            const OFF_SCREEN_BUFFER = 50; 
             projectiles = projectiles.filter(p =>
-                p.x > -OFF_SCREEN_BUFFER && p.x < CANVAS_WIDTH + OFF_SCREEN_BUFFER && 
-                p.y > -OFF_SCREEN_BUFFER && p.y < CANVAS_HEIGHT + OFF_SCREEN_BUFFER
+                p.x > 0 - OFF_SCREEN_BUFFER && p.x < WORLD_WIDTH + OFF_SCREEN_BUFFER && 
+                p.y > 0 - OFF_SCREEN_BUFFER && p.y < WORLD_HEIGHT + OFF_SCREEN_BUFFER
             );
         }
 
@@ -1111,60 +1359,12 @@
             
             if (highScore && highScore.score > 0) {
                 if (score === highScore.score) {
-                    highScoreText.innerHTML = `<div class="text-2xl mt-4 text-green-400">NEW HIGH SCORE! ${score}</div><div class="text-lg">Kills: ${highScore.kills}</div>`;
+                    highScoreText.innerHTML = `<div class="text-2xl mt-4 text-green-400">NEW HIGH SCORE: ${score}</div><div class="text-lg">Kills: ${highScore.kills}</div>`;
                 } else {
                     highScoreText.innerHTML = `<div class="text-2xl mt-4">HIGH SCORE: ${highScore.score}</div><div class="text-lg">Most Kills: ${highScore.kills}</div>`;
                 }
             } else {
                  highScoreText.textContent = "Your first score is recorded locally!";
-            }
-        }
-        
-        // FIX: Loads 'lvl_2.html'
-        window.nextLevel = function() {
-            // Redirects to the next level file in the same directory
-            window.location.href = 'lvl_2.html';
-        }
-
-        // NEW: Function to handle winning the level (triggers next level load immediately)
-        function levelCompleteFn() {
-            levelComplete = true;
-            gameActive = false;
-            
-            score += 5000; // Bonus points for completing the level (defeating the boss)
-            window.saveHighScore(score, kills);
-            
-            // Immediately load the next level without showing a modal
-            nextLevel(); 
-        }
-
-        // NEW: Function to check if the player enters the goal zone
-        function checkGoalZone() {
-            // Check if player's right edge is past the goal zone's left edge
-            if (player.x + player.radius > GOAL_ZONE.x) {
-                // The player has entered the zone!
-                levelCompleteFn();
-            }
-        }
-        
-        // NEW: Function to draw the flashing goal zone
-        function drawGoalZone() {
-            // Only draw the goal zone if the boss is defeated and enemies are cleared
-            if (bossSpawned && enemies.length === 0 && !levelComplete) {
-                // Flash the color to indicate the goal is active
-                const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5; // Sine wave from 0.0 to 1.0
-                ctx.fillStyle = `rgba(0, 255, 119, ${pulse})`; // Bright green flash
-                ctx.fillRect(GOAL_ZONE.x, GOAL_ZONE.y, GOAL_ZONE.width, GOAL_ZONE.height);
-                
-                // Add text label
-                ctx.fillStyle = `rgba(0, 0, 0, 1.0)`;
-                ctx.font = 'bold 24px "Chakra Petch"';
-                ctx.textAlign = 'center';
-                ctx.save();
-                ctx.translate(GOAL_ZONE.x + GOAL_ZONE.width / 2, GOAL_ZONE.height / 2);
-                ctx.rotate(Math.PI / 2); // Rotate text 90 degrees
-                ctx.fillText("GOAL", 0, 10);
-                ctx.restore();
             }
         }
 
@@ -1173,20 +1373,62 @@
             gameActive = true;
             requestAnimationFrame(gameLoop);
         }
+        
+        function updateCamera() {
+            // Center the camera on the player
+            cameraX = player.x - CANVAS_WIDTH / 2;
+            cameraY = player.y - CANVAS_HEIGHT / 2;
+
+            // Clamp the camera to the world boundaries
+            cameraX = Math.max(0, cameraX);
+            cameraY = Math.max(0, cameraY);
+            cameraX = Math.min(cameraX, WORLD_WIDTH - CANVAS_WIDTH);
+            cameraY = Math.min(cameraY, WORLD_HEIGHT - CANVAS_HEIGHT);
+        }
+        
+        function drawWorldBoundary() {
+            ctx.strokeStyle = '#FF0000'; 
+            ctx.lineWidth = 10;
+            ctx.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        }
 
         function gameLoop() {
-            if (!gameActive || levelComplete) return;
+            if (!gameActive) return; 
 
             // 1. Clear Canvas
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             
-            // NEW: Draw Goal Zone first (if active)
-            drawGoalZone();
+            // 2. Update Camera
+            updateCamera();
 
-            // 2. Update Timers
+            // 3. Draw Background (No context translation applied here for parallax)
+            drawBackground();
+
+            // 4. Apply Camera Translation for all World Objects
+            ctx.save();
+            ctx.translate(-cameraX, -cameraY);
+            
+            // 5. Update Timers and Difficulty
+            difficultyTimer++;
+            if (difficultyTimer > DIFFICULTY_INCREASE_RATE) {
+                difficultyFactor += 0.1; 
+                ENEMY_SPAWN_RATE_BASE = Math.max(50, ENEMY_SPAWN_RATE_BASE - 5); 
+                difficultyTimer = 0;
+            }
+            
+            // Boss Spawn Check
+            if (!currentBoss && killsSinceLastBoss >= BOSS_KILL_THRESHOLD) {
+                spawnBoss();
+            }
+
             enemySpawnTimer++;
-            if (!bossSpawned && enemySpawnTimer > ENEMY_SPAWN_RATE) { 
-                spawnEnemy();
+            // Only spawn regular enemies if no boss, or keep a minimum number of enemies with the boss present
+            const maxEnemies = currentBoss ? 15 : MAX_ENEMIES;
+            const currentSpawnRate = ENEMY_SPAWN_RATE_BASE / Math.min(2.0, difficultyFactor); 
+            if (enemySpawnTimer > currentSpawnRate) { 
+                if (enemies.length < maxEnemies) {
+                    spawnEnemy();
+                }
                 enemySpawnTimer = 0;
             }
             
@@ -1196,7 +1438,7 @@
                 powerupSpawnTimer = 0;
             }
 
-            // 3. Update Entities
+            // 6. Update Entities
             player.handleInput();
             player.update();
             player.fireCooldown = Math.max(0, player.fireCooldown - 1); 
@@ -1211,41 +1453,51 @@
                 });
             });
 
-            // 4. Handle Collisions
+            // 7. Handle Collisions
             handleCollisions();
 
-            // 5. Check Game Over
+            // 8. Check Game Over / Respawn
             if (player.isDead()) {
-                endGame();
-                return;
+                playerLives--;
+                
+                if (playerLives <= 0) {
+                    ctx.restore(); 
+                    endGame();
+                    return;
+                } else {
+                    // Respawn logic: reset health and position
+                    player.health = player.maxHealth;
+                    // Teleport player back to the center of the current screen view
+                    player.x = cameraX + CANVAS_WIDTH / 2;
+                    player.y = cameraY + CANVAS_HEIGHT / 2;
+                    
+                    // Clear nearby hostile projectiles for a moment of safety
+                    projectiles = projectiles.filter(p => p.type !== 'enemy' || Math.hypot(p.x - player.x, p.y - player.y) > 300);
+                    
+                    updateHUD(); // Update the lives and health display
+                }
             }
             
-            // 5b. Check for Boss Spawn Condition (20 kills)
-            if (!bossSpawned && kills >= KILLS_FOR_BOSS) {
-                spawnBoss();
-            }
-
-            // 5c. Check for Boss Defeat Condition & Goal Entry
-            if (bossSpawned && enemies.length === 0 && !levelComplete) {
-                // Boss defeated, goal is active, check if player has entered the zone
-                checkGoalZone(); 
-            }
-
-            // 6. Draw Entities
+            // 9. Draw Entities
             powerups.forEach(p => p.draw());
             obstacles.forEach(o => o.draw()); 
             player.draw();
             enemies.forEach(e => e.draw());
             projectiles.forEach(p => p.draw());
+            
+            drawWorldBoundary();
 
-            // 7. Update HUD
+            // 10. Restore context
+            ctx.restore(); 
+
+            // 11. Update HUD
             updateHUD();
 
-            // 8. Loop
+            // 12. Loop
             requestAnimationFrame(gameLoop);
         }
 
-        // --- EVENT LISTENERS (No changes needed) ---
+        // --- EVENT LISTENERS ---
 
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
@@ -1263,8 +1515,12 @@
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            mouseX = (e.clientX - rect.left) * scaleX;
-            mouseY = (e.clientY - rect.top) * scaleY;
+            
+            mouseX_Screen = (e.clientX - rect.left) * scaleX;
+            mouseY_Screen = (e.clientY - rect.top) * scaleY;
+            
+            mouseX_World = mouseX_Screen + cameraX;
+            mouseY_World = mouseY_Screen + cameraY;
         });
 
         canvas.addEventListener('mousedown', () => {
